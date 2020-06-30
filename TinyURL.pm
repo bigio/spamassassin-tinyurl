@@ -174,9 +174,8 @@ sub _check_tiny {
 
       if (exists $self->{url_redirector}->{$redir_dom}) {
         if($resp->{_rc} == '301') {
-	  push(@{ $pms->{tiny_url} }, $dom);
-          dbg("HIT! $dom found in redirector $tiny_url");
-          $pms->test_log("$tiny_url ($dom)");
+	  push(@{ $pms->{tiny_dom} }, $dom);
+	  push(@{ $pms->{tiny_url} }, $tiny_url);
     	  $pms->add_uri_detail_list($dest);
         }
       }
@@ -188,9 +187,16 @@ sub _check_tiny {
 sub tiny_url_check {
   my ($self, $pms) = @_;
 
+  my ($dom, $cnt);
+
   my $rulename = $pms->get_current_eval_rule_name();
-  foreach my $hit ( @{ $pms->{tiny_url} } ) {
+  $cnt = 0;
+  foreach my $tiny_url ( @{ $pms->{tiny_url} } ) {
+    $dom = $pms->{tiny_dom}[$cnt];
+    dbg("HIT! $dom found in redirector $tiny_url");
+    $pms->test_log("$tiny_url ($dom)");
     $pms->got_hit($rulename, "", ruletype => 'eval');
+    $cnt++;
   }
   return;
 }
