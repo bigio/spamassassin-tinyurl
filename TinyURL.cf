@@ -8,6 +8,8 @@ body HAS_TINY_URL      eval:tiny_url_check()
 describe HAS_TINY_URL  Message contains at least an URL redirector
 score HAS_TINY_URL     0.01
 
+url_redirector_re (?:.blogspot.*)$
+
 url_redirector 0rz.tw
 url_redirector 1l2.us
 url_redirector 1link.in

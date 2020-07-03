@@ -5,9 +5,9 @@
 # The ASF licenses this file to you under the Apache License, Version 2.0
 # (the "License"); you may not use this file except in compliance with
 # the License.  You may obtain a copy of the License at:
-# 
+#
 #     http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -44,6 +44,7 @@ use warnings;
 
 use Mail::SpamAssassin::Plugin;
 use Mail::SpamAssassin::PerMsgStatus;
+use Mail::SpamAssassin::Util qw(compile_regexp);
 
 use constant HAS_LWP_USERAGENT => eval { require LWP::UserAgent; };
 
@@ -116,6 +117,35 @@ sub set_config {
     }
   });
 
+=over 4
+
+=item url_redirector_re [...]
+
+A list of regexps to match url redirectors that will be looked at.
+
+=cut
+
+  push (@cmds, {
+    setting => 'url_redirector_re',
+    is_admin => 1,
+    default => {},
+    code => sub {
+      my ($self, $key, $value, $line) = @_;
+      if ($value =~ /^$/) {
+        return $Mail::SpamAssassin::Conf::MISSING_REQUIRED_VALUE;
+      }
+      $self->{url_redirector_re} = ();
+      foreach my $re (split(/\s+/, $value)) {
+        my ($rec, $err) = compile_regexp($re, 0);
+        if (!$rec) {
+          warn "TinyURL: invalid domain regex $re: $@\n";
+          return 0;
+        }
+        push(@{$self->{url_redirector_re}}, $rec);
+      }
+    }
+  });
+
   $conf->{parser}->register_commands(\@cmds);
 }
 
@@ -128,8 +158,9 @@ sub parsed_metadata {
   return if (!$pms->is_dns_available() || !HAS_LWP_USERAGENT);
 
   $self->{url_redirector} = $pms->{main}->{conf}->{url_redirector};
+  $self->{url_redirector_re} = $pms->{main}->{conf}->{url_redirector_re};
 
-  return if not defined $self->{url_redirector};
+  return if (not defined $self->{url_redirector} or not defined $self->{url_redirector_re});
 
   my %tiny_urls;
   my $uris = $pms->get_uri_detail_list();
@@ -141,7 +172,14 @@ sub parsed_metadata {
       dbg("Checking domain $dom");
       if (exists $self->{url_redirector}->{$dom}) {
         $tiny_urls{$uri} = 1;
-	$count++;
+	      $count++;
+      }
+      foreach my $re ( $self->{url_redirector_re} ) {
+        if($dom =~ /@$re[0]/) {
+          dbg("Domain $dom matches regexp @$re[0]");
+          $tiny_urls{$uri} = 1;
+          $count++;
+        }
       }
     }
   }
@@ -172,12 +210,13 @@ sub _check_tiny {
 
       next if ($dom eq $redir_dom);
 
-      if (exists $self->{url_redirector}->{$redir_dom}) {
-        if($resp->{_rc} == '301') {
-	  push(@{ $pms->{tiny_dom} }, $dom);
-	  push(@{ $pms->{tiny_url} }, $tiny_url);
-    	  $pms->add_uri_detail_list($dest);
-        }
+      # Match a redirect (30X http codes)
+      if($resp->{_rc} =~ /30/) {
+        dbg("Adding $dom to uri_detail_list");
+        push(@{ $pms->{tiny_dom} }, $dom);
+        dbg("Adding $tiny_url to uri_detail_list");
+        push(@{ $pms->{tiny_url} }, $tiny_url);
+        $pms->add_uri_detail_list($dest);
       }
       return;
   }
