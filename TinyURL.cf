@@ -1,7 +1,5 @@
 if (version >= 4.000000)
 
-loadplugin Mail::SpamAssassin::Plugin::TinyURL TinyURL.pm
-
 ifplugin Mail::SpamAssassin::Plugin::TinyURL
 
 body HAS_TINY_URL      eval:tiny_url_check()
