@@ -78,6 +78,7 @@ sub new {
     $self->{ua} = new LWP::UserAgent;
     $self->{ua}->{max_redirect} = 0;
     $self->{ua}->{timeout} = 5;
+    $self->{ua}->agent('Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0');
     $self->{ua}->env_proxy;
   }
 
@@ -172,13 +173,14 @@ sub parsed_metadata {
       dbg("Checking domain $dom");
       if (exists $self->{url_redirector}->{$dom}) {
         $tiny_urls{$uri} = 1;
-	      $count++;
-      }
-      foreach my $re ( $self->{url_redirector_re} ) {
-        if($dom =~ /@$re[0]/) {
-          dbg("Domain $dom matches regexp @$re[0]");
-          $tiny_urls{$uri} = 1;
-          $count++;
+	$count++;
+      } else {
+        foreach my $re ( $self->{url_redirector_re} ) {
+          if($dom =~ /@$re[0]/) {
+            dbg("Domain $dom matches regexp @$re[0]");
+            $tiny_urls{$uri} = 1;
+            $count++;
+          }
         }
       }
     }
