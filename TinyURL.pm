@@ -210,7 +210,7 @@ sub _check_tiny {
       $dom = $self->{main}->{registryboundaries}->uri_to_domain($dest);
       $redir_dom = $self->{main}->{registryboundaries}->uri_to_domain($tiny_url);
 
-      next if ($dom eq $redir_dom);
+      return if ($dom eq $redir_dom);
 
       # Match a redirect (30X http codes)
       if($resp->{_rc} =~ /30/) {
