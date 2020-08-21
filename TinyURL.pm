@@ -97,6 +97,8 @@ sub new {
 
 A list of url redirectors must be setup to look at different url shorteners.
 
+=back
+
 =cut
 
 sub set_config {
@@ -123,6 +125,8 @@ sub set_config {
 =item url_redirector_re [...]
 
 A list of regexps to match url redirectors that will be looked at.
+
+=back
 
 =cut
 
