@@ -74,12 +74,7 @@ sub new {
     warn("Lwp::UserAgent dependency not installed");
     return;
   } else {
-    # XXX remove hardcoded values
     $self->{ua} = new LWP::UserAgent;
-    $self->{ua}->{max_redirect} = 0;
-    $self->{ua}->{timeout} = 5;
-    $self->{ua}->agent('Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0');
-    $self->{ua}->env_proxy;
   }
 
   $self->set_config($mailsaobject->{conf});
@@ -168,7 +163,46 @@ The maximum number of urls to be checked.
     type => $Mail::SpamAssassin::Conf::CONF_TYPE_NUMERIC
   });
 
+=over 4
+
+=item max_redirects               (default: 5)
+
+The maximum number of redirected urls to check.
+
+=back
+
+=cut
+
+  push (@cmds, {
+    setting => 'max_redirects',
+    is_admin => 1,
+    default => 5,
+    type => $Mail::SpamAssassin::Conf::CONF_TYPE_NUMERIC
+  });
+
+=over 4
+
+=item http_user_agent               (default: "Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0")
+
+The http user-agent used in the connection.
+
+=back
+
+=cut
+
+  push (@cmds, {
+    setting => 'http_user_agent',
+    is_admin => 1,
+    default => 'Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0',
+    type => $Mail::SpamAssassin::Conf::CONF_TYPE_STRING
+  });
+
   $conf->{parser}->register_commands(\@cmds);
+
+  $self->{ua}->{max_redirect} = $conf->{parser}->{max_redirects};
+  $self->{ua}->agent($conf->{parser}->{http_user_agent});
+  $self->{ua}->{timeout} = 5;
+  $self->{ua}->env_proxy;
 }
 
 sub parsed_metadata {
