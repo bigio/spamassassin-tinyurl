@@ -206,9 +206,7 @@ sub _check_tiny {
   my ($self, $pms, $tiny_url, %found) = @_;
 
   my ($dest, $dom, $redir_dom);
-
   my $resp = $self->{ua}->head($tiny_url);
-
   if ($resp->is_redirect) {
       $dest = $resp->headers->{location};
       $dom = $self->{main}->{registryboundaries}->uri_to_domain($dest);
@@ -231,7 +229,6 @@ sub _check_tiny {
 
 sub tiny_url_check {
   my ($self, $pms) = @_;
-
   my ($dom, $cnt);
 
   my $rulename = $pms->get_current_eval_rule_name();
