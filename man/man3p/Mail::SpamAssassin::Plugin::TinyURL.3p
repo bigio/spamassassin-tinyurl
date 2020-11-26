@@ -133,7 +133,7 @@
 .\" ========================================================================
 .\"
 .IX Title "TinyURL 3"
-.TH TinyURL 3 "2020-08-21" "perl v5.30.3" "User Contributed Perl Documentation"
+.TH TinyURL 3 "2020-11-26" "perl v5.32.0" "User Contributed Perl Documentation"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -162,3 +162,6 @@ A list of url redirectors must be setup to look at different url shorteners.
 .IP "url_redirector_re [...]" 4
 .IX Item "url_redirector_re [...]"
 A list of regexps to match url redirectors that will be looked at.
+.IP "max_urls               (default: 10)" 4
+.IX Item "max_urls (default: 10)"
+The maximum number of urls to be checked.

@@ -151,6 +151,23 @@ A list of regexps to match url redirectors that will be looked at.
     }
   });
 
+=over 4
+
+=item max_urls               (default: 10)
+
+The maximum number of urls to be checked.
+
+=back
+
+=cut
+
+  push (@cmds, {
+    setting => 'max_urls',
+    is_admin => 1,
+    default => 10,
+    type => $Mail::SpamAssassin::Conf::CONF_TYPE_NUMERIC
+  });
+
   $conf->{parser}->register_commands(\@cmds);
 }
 
@@ -164,6 +181,7 @@ sub parsed_metadata {
 
   $self->{url_redirector} = $pms->{main}->{conf}->{url_redirector};
   $self->{url_redirector_re} = $pms->{main}->{conf}->{url_redirector_re};
+  $self->{max_urls} = $pms->{main}->{conf}->{max_urls};
 
   return if (not defined $self->{url_redirector} or not defined $self->{url_redirector_re});
 
@@ -194,8 +212,8 @@ sub parsed_metadata {
 
   my $url_count = 0;
   foreach my $turl (keys %tiny_urls) {
-    # XXX remove hardcoded value
-    next if ($url_count gt 5);
+    # do not check too many urls
+    last if ($url_count gt $self->{max_urls});
     my $dest = $self->_check_tiny($pms, $turl);
     $url_count++;
   }
