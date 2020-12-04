@@ -199,8 +199,8 @@ The http user-agent used in the connection.
 
   $conf->{parser}->register_commands(\@cmds);
 
-  $self->{ua}->{max_redirect} = $conf->{parser}->{max_redirects};
-  $self->{ua}->agent($conf->{parser}->{http_user_agent});
+  $self->{ua}->{max_redirect} = $conf->{max_redirects};
+  $self->{ua}->agent($conf->{http_user_agent});
   $self->{ua}->{timeout} = 5;
   $self->{ua}->env_proxy;
 }
